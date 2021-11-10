@@ -5,12 +5,12 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
 
 public class Ant {
-    private Rectangle antHitBox;
-    private Texture antImage;
+    final Rectangle antHitBox;
+    final Texture antImage;
 
     public Ant(float x, float y) {
         antHitBox = new Rectangle();
-        antHitBox.width = 64;
+        antHitBox.width = 128;
         antHitBox.height = 64;
         antHitBox.x = x;
         antHitBox.y = y;
@@ -23,5 +23,9 @@ public class Ant {
 
     public Texture getAntImage(){
         return antImage;
+    }
+
+    public void setAntImage(String newPath){
+        antImage.load(new Texture(Gdx.files.internal(newPath)).getTextureData());
     }
 }

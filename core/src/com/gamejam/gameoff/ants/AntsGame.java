@@ -6,17 +6,19 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.tiled.renderers.IsometricTiledMapRenderer;
-import com.badlogic.gdx.math.Vector3;
+
+import java.util.Iterator;
 
 public class AntsGame implements Screen {
     final GameManager gameManager;
     OrthographicCamera camera;
-    private MapManager map;
-    private IsometricTiledMapRenderer mapRenderer;
-    private Player player;
-    private Ant ant, ant2;
-    private HUD hud;
-    private int playerSpeedUpAndDown, playerSpeedLeftAndRight;
+    final MapManager map;
+    final IsometricTiledMapRenderer mapRenderer;
+    final Player player;
+    final AntsManager antsManager;
+    final ScoreItemManager scoreItemManager;
+    final HUD hud;
+    final int playerSpeedUpAndDown, playerSpeedLeftAndRight;
 
     public AntsGame(final GameManager gameManager){
         this.gameManager = gameManager;
@@ -29,12 +31,10 @@ public class AntsGame implements Screen {
         //aqui estamos posicionando correctamente el mapa
 //        mapRenderer.getMap().getLayers().get(0).setOffsetX(-640);
         player = new Player();
-        ant = new Ant(1024,0);
-        ant2 = new Ant(300,0);
         hud = new HUD();
+        antsManager = new AntsManager();
+        scoreItemManager = new ScoreItemManager();
         camera.translate(-960,-530);
-//        map = new TmxMapLoader().load("../../tiledmaps/map.tmx");
-//        mapRenderer = new IsometricTiledMapRenderer(map);
         //map.getTileSets().getTileSet(0).getTile(1).setTextureRegion(new TextureRegion(new Texture(Gdx.files.internal("../../android/assets/isometric tiles/bamboo06.png")),5,5,256,128));
 
 //        TiledMapTileLayer layer = (TiledMapTileLayer)map.getLayers().get(0);
@@ -47,8 +47,6 @@ public class AntsGame implements Screen {
 //        layer.setCell(0,4,celda2);
 //        layer.setCell(0,5,celda2);
 //        layer.setCell(0,6,celda2);
-
-        //MapManager mapManager = new MapManager();
     }
 
     @Override
@@ -67,44 +65,100 @@ public class AntsGame implements Screen {
         mapRenderer.render();
         gameManager.batch.setProjectionMatrix(camera.combined);
         gameManager.batch.begin();
-        gameManager.batch.draw(player.getPlayerImage(),player.getPlayerHitBox().x,player.getPlayerHitBox().y);
-        gameManager.batch.draw(ant.getAntImage(),ant.getAntHitBox().x,ant.getAntHitBox().y);
-        gameManager.batch.draw(ant2.getAntImage(),ant2.getAntHitBox().x,ant2.getAntHitBox().y);
-        gameManager.font.draw(gameManager.batch,hud.getAntCounterText(),hud.getaCTx(), hud.getaCTy());
-        gameManager.batch.draw(hud.getAntCounterIcon(),hud.getAntCounter().x,hud.getAntCounter().y);
-        gameManager.batch.draw(hud.getEnergyBarImage(), hud.getEnergyBar().x,hud.getEnergyBar().y);
+        antsManager.drawAnts(gameManager);
+        scoreItemManager.drawItems(gameManager);
+        gameManager.font.draw(
+                gameManager.batch,
+                hud.getAntCounterText(),
+                hud.getaCTx(),
+                hud.getaCTy()
+        );
+        gameManager.font.draw(
+                gameManager.batch,
+                hud.getScore(),
+                hud.getsTx(),
+                hud.getsTy()
+        );
+        if(player.getAntBehind()){
+            player.drawAntFollowingPlayer(gameManager);
+        }
+        gameManager.batch.draw(
+                player.getPlayerImage(),
+                player.getPlayerHitBox().x,
+                player.getPlayerHitBox().y,
+                player.getPlayerHitBox().getWidth(),
+                player.playerHitBox.getHeight()
+        );
+        gameManager.batch.draw(
+                hud.getAntCounterIcon(),
+                hud.getAntCounterRectangle().x,
+                hud.getAntCounterRectangle().y
+        );
+        gameManager.batch.draw(
+                hud.getEnergyBarImage(),
+                hud.getEnergyBarRectangle().x,
+                hud.getEnergyBarRectangle().y
+        );
         if(Gdx.input.isKeyPressed(Input.Keys.UP)){
             camera.translate(0,playerSpeedUpAndDown*Gdx.graphics.getDeltaTime());
             player.getPlayerHitBox().y += playerSpeedUpAndDown * Gdx.graphics.getDeltaTime();
-            hud.getAntCounter().y += playerSpeedUpAndDown * Gdx.graphics.getDeltaTime();
-            hud.getEnergyBar().y += playerSpeedUpAndDown * Gdx.graphics.getDeltaTime();
-            hud.setaCTy(playerSpeedUpAndDown*Gdx.graphics.getDeltaTime());
+            if(player.getAntBehind()){
+                if(player.getPlayerHitBox().y > player.getAntBehindY()+64){
+                    player.moveAntFollowingPlayer(playerSpeedUpAndDown*Gdx.graphics.getDeltaTime(),false);
+                }
+            }
+            hud.moveHUD(playerSpeedUpAndDown*Gdx.graphics.getDeltaTime(),false);
         }
         if(Gdx.input.isKeyPressed(Input.Keys.DOWN)){
             camera.translate(0,-playerSpeedUpAndDown * Gdx.graphics.getDeltaTime());
             player.getPlayerHitBox().y -= playerSpeedUpAndDown * Gdx.graphics.getDeltaTime();
-            hud.getAntCounter().y -= playerSpeedUpAndDown * Gdx.graphics.getDeltaTime();
-            hud.getEnergyBar().y -= playerSpeedUpAndDown * Gdx.graphics.getDeltaTime();
-            hud.setaCTy(-playerSpeedUpAndDown*Gdx.graphics.getDeltaTime());
+            if(player.getAntBehind()){
+                if(player.getPlayerHitBox().y < player.getAntBehindY()-64){
+                    player.moveAntFollowingPlayer(-playerSpeedUpAndDown*Gdx.graphics.getDeltaTime(),false);
+                }
+            }
+            hud.moveHUD(-playerSpeedUpAndDown*Gdx.graphics.getDeltaTime(),false);
         }
         if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
             camera.translate(-playerSpeedLeftAndRight * Gdx.graphics.getDeltaTime(),0);
             player.getPlayerHitBox().x -= playerSpeedLeftAndRight * Gdx.graphics.getDeltaTime();
-            hud.getAntCounter().x -= playerSpeedLeftAndRight * Gdx.graphics.getDeltaTime();
-            hud.getEnergyBar().x -= playerSpeedLeftAndRight * Gdx.graphics.getDeltaTime();
-            hud.setaCTx(-playerSpeedLeftAndRight*Gdx.graphics.getDeltaTime());
+            if(player.getAntBehind()){
+                if(player.getPlayerHitBox().x < player.getAntBehindX()-128){
+                    player.moveAntFollowingPlayer(-playerSpeedLeftAndRight*Gdx.graphics.getDeltaTime(),true);
+                }
+            }
+            hud.moveHUD(-playerSpeedLeftAndRight*Gdx.graphics.getDeltaTime(),true);
         }
         if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
             camera.translate(playerSpeedLeftAndRight * Gdx.graphics.getDeltaTime(),0);
             player.getPlayerHitBox().x += playerSpeedLeftAndRight * Gdx.graphics.getDeltaTime();
-            hud.getAntCounter().x += playerSpeedLeftAndRight * Gdx.graphics.getDeltaTime();
-            hud.getEnergyBar().x += playerSpeedLeftAndRight * Gdx.graphics.getDeltaTime();
-            hud.setaCTx(playerSpeedLeftAndRight*Gdx.graphics.getDeltaTime());
-        }
-        if(ant.getAntHitBox().overlaps(player.getPlayerHitBox())){
-            hud.addAntCounter();
+            if(player.getAntBehind()){
+                if(player.getPlayerHitBox().x > player.getAntBehindX()+128){
+                    player.moveAntFollowingPlayer(playerSpeedLeftAndRight*Gdx.graphics.getDeltaTime(),true);
+                }
+            }
+            hud.moveHUD(playerSpeedLeftAndRight*Gdx.graphics.getDeltaTime(),true);
         }
         gameManager.batch.end();
+
+        Iterator<Ant> antIterator = antsManager.ants.iterator();
+        while(antIterator.hasNext()){
+            Ant antInMap = antIterator.next();
+            if(antInMap.getAntHitBox().overlaps(player.getPlayerHitBox())){
+                hud.addAntCounter();
+                player.addAnt();
+                antIterator.remove();
+            }
+        }
+
+        Iterator<ScoreItem> scoreItemIterator = scoreItemManager.scoreItems.iterator();
+        while(scoreItemIterator.hasNext()){
+            ScoreItem scoreItemInMap = scoreItemIterator.next();
+            if(scoreItemInMap.getScoreItemHitBox().overlaps(player.getPlayerHitBox()) && !player.isCarrying()){
+                player.setCarrying();
+                scoreItemIterator.remove();
+            }
+        }
     }
 
     @Override

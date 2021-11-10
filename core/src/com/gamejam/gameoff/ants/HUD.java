@@ -5,20 +5,22 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
 
 public class HUD {
-    private Texture energyBarImage;
-    private Rectangle energyBar;
-    private Texture antCounterIcon;
-    private Rectangle antCounterIconRectangle;
+    final Texture energyBarImage;
+    final Rectangle energyBarRectangle;
+    final Texture antCounterIcon;
+    final Rectangle antCounterIconRectangle;
     private CharSequence antCounterText;
-    private float aCTx, aCTy;
+    private float aCTx, aCTy, sTx, sTy;
     private int antCounter;
+    final CharSequence scoreText;
+    private int scoreNumber;
 
     public HUD() {
-        energyBar = new Rectangle();
-        energyBar.width = 100;
-        energyBar.height = 500;
-        energyBar.x = -650f;
-        energyBar.y = -300f;
+        energyBarRectangle = new Rectangle();
+        energyBarRectangle.width = 100;
+        energyBarRectangle.height = 500;
+        energyBarRectangle.x = -650f;
+        energyBarRectangle.y = -300f;
         energyBarImage = new Texture(Gdx.files.internal("energyBar.png"));
         antCounterIconRectangle = new Rectangle();
         antCounterIconRectangle.width = 128;
@@ -30,15 +32,19 @@ public class HUD {
         aCTx = -640;
         aCTy = 360;
         antCounterText = "x"+ antCounter;
+        scoreText = "Puntaje:";
+        scoreNumber = 0;
+        sTx = -640;
+        sTy = -310;
     }
 
-    public Rectangle getEnergyBar(){ return energyBar; }
+    public Rectangle getEnergyBarRectangle(){ return energyBarRectangle; }
 
     public Texture getEnergyBarImage(){
         return energyBarImage;
     }
 
-    public Rectangle getAntCounter(){
+    public Rectangle getAntCounterRectangle(){
         return antCounterIconRectangle;
     }
 
@@ -48,18 +54,46 @@ public class HUD {
 
     public CharSequence getAntCounterText(){ return antCounterText; }
 
+    public CharSequence getScore(){ return scoreText + " " + scoreNumber; }
+
     public float getaCTx() { return aCTx; }
+
+    public void setaCTx(float xchange){ aCTx +=xchange; }
 
     public float getaCTy() { return aCTy; }
 
-    public void setaCTx(float xchange){
-        aCTx +=xchange;
-    }
     public void setaCTy(float ychange){
         aCTy += ychange;
     }
+
+    public float getsTx() { return sTx; }
+
+    public void setsTx(float xchange) { sTx += xchange; }
+
+    public float getsTy() { return sTy; }
+
+    public void setsTy(float ychange) { sTy += ychange; }
+
     public void addAntCounter(){
         antCounter++;
         antCounterText = "x"+antCounter;
+    }
+
+    public void moveHUD(float moveAmount, boolean axisX){
+        if(axisX){
+            antCounterIconRectangle.x += moveAmount;
+            energyBarRectangle.x += moveAmount;
+            setaCTx(moveAmount);
+            setsTx(moveAmount);
+        }else{
+            antCounterIconRectangle.y += moveAmount;
+            energyBarRectangle.y += moveAmount;
+            setaCTy(moveAmount);
+            setsTy(moveAmount);
+        }
+    }
+
+    public void incrementScore(int pointsToAdd){
+        scoreNumber += pointsToAdd;
     }
 }
