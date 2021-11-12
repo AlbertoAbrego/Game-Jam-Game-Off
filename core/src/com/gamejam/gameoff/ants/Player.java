@@ -31,9 +31,13 @@ public class Player {
     }
 
     public void addAnt(){
-        isAntBehind = true;
-        antBehind = new Ant(playerHitBox.x-playerHitBox.width,playerHitBox.y);
-        antBehind.setAntImage("antM.png");
+        if(isAntBehind){
+            antBehind.addAnt();
+        }else{
+            isAntBehind = true;
+            antBehind = new Ant(playerHitBox.x-playerHitBox.width,playerHitBox.y);
+            antBehind.setAntImage("antM.png");
+        }
     }
 
     public boolean isCarrying(){
@@ -44,7 +48,7 @@ public class Player {
         isCarrying = true;
     }
 
-    public boolean getAntBehind(){ return isAntBehind; }
+    public boolean hasAntBehind(){ return isAntBehind; }
 
     public void drawAntFollowingPlayer(GameManager gameManager){
         gameManager.batch.draw(
@@ -54,6 +58,9 @@ public class Player {
                 antBehind.getAntHitBox().getWidth(),
                 antBehind.getAntHitBox().getHeight()
         );
+        if(antBehind.hasAntBehind()){
+            antBehind.drawAntFollowingAnt(gameManager);
+        }
     }
 
     public float getAntBehindX() { return antBehind.getAntHitBox().x; }
@@ -65,6 +72,28 @@ public class Player {
             antBehind.antHitBox.x += moveAmount;
         }else{
             antBehind.antHitBox.y += moveAmount;
+        }
+        if(antBehind.hasAntBehind()){
+            if(moveAmount>0 && !axisX){
+                if(antBehind.getAntHitBox().y> antBehind.getAntBehindY()+64){
+                    antBehind.moveAntFollowingAnt(moveAmount,axisX);
+                }
+            }
+            if(moveAmount<0 && !axisX){
+                if(antBehind.getAntHitBox().y< antBehind.getAntBehindY()-64){
+                    antBehind.moveAntFollowingAnt(moveAmount,axisX);
+                }
+            }
+            if(moveAmount<0 && axisX){
+                if(antBehind.getAntHitBox().x< antBehind.getAntBehindX()-128){
+                    antBehind.moveAntFollowingAnt(moveAmount,axisX);
+                }
+            }
+            if(moveAmount>0 && axisX){
+                if(antBehind.getAntHitBox().x> antBehind.getAntBehindX()+128){
+                    antBehind.moveAntFollowingAnt(moveAmount,axisX);
+                }
+            }
         }
     }
 }

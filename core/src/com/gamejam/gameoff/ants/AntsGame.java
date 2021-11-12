@@ -79,7 +79,7 @@ public class AntsGame implements Screen {
                 hud.getsTx(),
                 hud.getsTy()
         );
-        if(player.getAntBehind()){
+        if(player.hasAntBehind()){
             player.drawAntFollowingPlayer(gameManager);
         }
         gameManager.batch.draw(
@@ -102,7 +102,7 @@ public class AntsGame implements Screen {
         if(Gdx.input.isKeyPressed(Input.Keys.UP)){
             camera.translate(0,playerSpeedUpAndDown*Gdx.graphics.getDeltaTime());
             player.getPlayerHitBox().y += playerSpeedUpAndDown * Gdx.graphics.getDeltaTime();
-            if(player.getAntBehind()){
+            if(player.hasAntBehind()){
                 if(player.getPlayerHitBox().y > player.getAntBehindY()+64){
                     player.moveAntFollowingPlayer(playerSpeedUpAndDown*Gdx.graphics.getDeltaTime(),false);
                 }
@@ -112,7 +112,7 @@ public class AntsGame implements Screen {
         if(Gdx.input.isKeyPressed(Input.Keys.DOWN)){
             camera.translate(0,-playerSpeedUpAndDown * Gdx.graphics.getDeltaTime());
             player.getPlayerHitBox().y -= playerSpeedUpAndDown * Gdx.graphics.getDeltaTime();
-            if(player.getAntBehind()){
+            if(player.hasAntBehind()){
                 if(player.getPlayerHitBox().y < player.getAntBehindY()-64){
                     player.moveAntFollowingPlayer(-playerSpeedUpAndDown*Gdx.graphics.getDeltaTime(),false);
                 }
@@ -122,7 +122,7 @@ public class AntsGame implements Screen {
         if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
             camera.translate(-playerSpeedLeftAndRight * Gdx.graphics.getDeltaTime(),0);
             player.getPlayerHitBox().x -= playerSpeedLeftAndRight * Gdx.graphics.getDeltaTime();
-            if(player.getAntBehind()){
+            if(player.hasAntBehind()){
                 if(player.getPlayerHitBox().x < player.getAntBehindX()-128){
                     player.moveAntFollowingPlayer(-playerSpeedLeftAndRight*Gdx.graphics.getDeltaTime(),true);
                 }
@@ -132,7 +132,7 @@ public class AntsGame implements Screen {
         if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
             camera.translate(playerSpeedLeftAndRight * Gdx.graphics.getDeltaTime(),0);
             player.getPlayerHitBox().x += playerSpeedLeftAndRight * Gdx.graphics.getDeltaTime();
-            if(player.getAntBehind()){
+            if(player.hasAntBehind()){
                 if(player.getPlayerHitBox().x > player.getAntBehindX()+128){
                     player.moveAntFollowingPlayer(playerSpeedLeftAndRight*Gdx.graphics.getDeltaTime(),true);
                 }
