@@ -10,16 +10,28 @@ public class Player {
     private boolean isCarrying;
     private boolean isAntBehind;
     private Ant antBehind;
+    private int score;
+    private int points;
+    private float energy;
+    private float maxEnergy;
+    final float energyLostByStep;
+    private float energyLost;
+    private int numberOfAnts;
 
     public Player() {
         playerHitBox = new Rectangle();
         playerHitBox.width = 128;
         playerHitBox.height = 64;
-        playerHitBox.x =0 ;
-        playerHitBox.y = 0;
+        playerHitBox.x = 128-playerHitBox.width/2;
+        playerHitBox.y = 64-playerHitBox.height/2;
         playerImage = new Texture(Gdx.files.internal("player.png"));
         isCarrying = false;
         isAntBehind = false;
+        energy = 30;
+        maxEnergy = 30;
+        energyLostByStep = 0.5f;
+        energyLost = energyLostByStep;
+        numberOfAnts = 1;
     }
 
     public Rectangle getPlayerHitBox() {
@@ -30,22 +42,93 @@ public class Player {
         return playerImage;
     }
 
+    public void setPlayerImage(String path){
+        playerImage.load(new Texture(Gdx.files.internal(path)).getTextureData());
+    }
+
+    public float getEnergy() { return energy; }
+
+    public void updateEnergy(float amount){
+        energy -= amount * energyLost;
+        if(energy < 0){
+            energy = 0;
+        }
+    }
+
+    public void addEnergy(int amount){
+        energy += amount;
+        if(energy > maxEnergy){
+            energy = maxEnergy;
+        }
+    }
+
+    public void updateEnergyLostByStep(){
+        energyLost = energyLostByStep * numberOfAnts;
+    }
+
+    public int getNumberOfAnts() { return numberOfAnts; }
+
+    public void addScore(int amount) { score += amount; }
+
+    public int getScore(){ return score; }
+
+    public void addPoints(int amount) { points += amount; }
+
+    public int getPoints() { return points; }
+
+    public void resetPoints() {
+        points = 0;
+        isCarrying = false;
+        setPlayerImage("player.png");
+        if(hasAntBehind()){
+            antBehind.setNotCarrying();
+        }
+    }
+
     public void addAnt(){
+        numberOfAnts++;
+        maxEnergy += 30;
+        energy += 30;
+        updateEnergyLostByStep();
         if(isAntBehind){
             antBehind.addAnt();
         }else{
             isAntBehind = true;
-            antBehind = new Ant(playerHitBox.x-playerHitBox.width,playerHitBox.y);
-            antBehind.setAntImage("antM.png");
+            antBehind = new Ant(playerHitBox.x-playerHitBox.width,playerHitBox.y,"ant.png");
         }
     }
 
-    public boolean isCarrying(){
-        return isCarrying;
+    public int antsCanCarry(){
+        int numberOfAntsCanCarry = 0;
+        if(!isCarrying){
+            numberOfAntsCanCarry++;
+        }
+        if(hasAntBehind()){
+            numberOfAntsCanCarry += antBehind.canCarry();
+        }
+        return numberOfAntsCanCarry;
     }
 
     public void setCarrying(){
         isCarrying = true;
+        setPlayerImage("playercarrying.png");
+    }
+
+    public void addItem(int antsRequired) {
+        if(antsRequired==1){
+            if(!isCarrying){
+                setCarrying();
+            }else{
+                antBehind.addItem(antsRequired);
+            }
+        }else{
+            if(!isCarrying){
+                setCarrying();
+                antBehind.addItem(antsRequired-1);
+            }else{
+                antBehind.addItem(antsRequired);
+            }
+        }
     }
 
     public boolean hasAntBehind(){ return isAntBehind; }
@@ -96,4 +179,5 @@ public class Player {
             }
         }
     }
+
 }
