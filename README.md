@@ -1,4 +1,4 @@
-#Feed the colony
+Feed the colony
 
 This game has been made for learning purposes, is just a main idea, here is the Game Design Document also made for learning.
 
